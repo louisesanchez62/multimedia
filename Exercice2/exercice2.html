@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Geolocation Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        #data {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Test Geolocation with Smartphone</h1>
+    <button onclick="getCurrentLocation()">Get Current Location</button>
+    <button onclick="startWatchingLocation()">Watch Position</button>
+    <button onclick="stopWatching()">Stop Watching</button>
+
+    <div id="data">
+        <h2>Position :</h2>
+        <p><strong>Latitude:</strong> <span id="latitude">N/A</span></p>
+        <p><strong>Longitude:</strong> <span id="longitude">N/A</span></p>
+        <p><strong>Altitude:</strong> <span id="altitude">N/A</span></p>
+        <p><strong>Précision:</strong> <span id="precision">N/A</span></p>
+        <p><strong>Vitesse:</strong> <span id="vitesse">N/A</span></p>
+        <p><strong>Date Timestamp:</strong> <span id="datetimestamp">N/A</span></p>
+    </div>
+
+    <script>
+        let watchId;
+
+        function getCurrentLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(showPosition);
+            }
+        }
+
+        function startWatchingLocation() {
+            if (navigator.geolocation) {
+                watchId = navigator.geolocation.watchPosition(showPosition);
+            }
+        }
+
+        function stopWatching() {
+            if (watchId) {
+                navigator.geolocation.clearWatch(watchId);
+                alert("Stopped watching location.");
+            }
+        }
+
+        function showPosition(position) {
+            document.getElementById("latitude").textContent = position.coords.latitude;
+            document.getElementById("longitude").textContent = position.coords.longitude;
+            document.getElementById("altitude").textContent = position.coords.altitude ? position.coords.altitude : "Not available";
+            document.getElementById("precision").textContent = position.coords.accuracy + " meters";
+            document.getElementById("vitesse").textContent = position.coords.speed ? position.coords.speed + " m/s" : "Not available";
+            document.getElementById("datetimestamp").textContent = new Date(position.timestamp).toLocaleString();
+        }
+    </script>
+</body>
+</html>
