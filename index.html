@@ -1,4 +1,4 @@
-<!doctype html>
+<!-- <!doctype html>
 <html>
   <head>
     <meta charset="utf-8" />
@@ -6,7 +6,86 @@
   </head>
   <body>
     <h1>Programmation multimedia</h1><br>
-    <a href="./Exercice2/exercice2.html">Exercice 2</a>
-    <a href="./Exercice3/exercice3.html">Exercice 3</a>
+    <a href="./TP1">TP 1</a>
+    <a href="./TP1/Exercice2/exercice2.html">Exercice 2</a>
+    <a href="./TP1/Exercice3/exercice3.html">Exercice 3</a>
+    <a href="./TP1/Exercice4/exercice4.html">Exercice 4</a>
+  </body>
+</html> -->
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Programmation multimedia</title>
+    <style>
+      /* Style général du body */
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f4;
+        margin: 0;
+        padding: 0;
+      }
+
+      /* Conteneur pour les cartes */
+      .card-container {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        padding: 20px;
+      }
+
+      /* Style des cartes */
+      .card {
+        background-color: #fff;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        margin: 10px;
+        width: 200px;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        text-align: center;
+        overflow: hidden;
+        cursor: pointer;
+        text-decoration: none;
+        color: #333;
+      }
+
+      .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+      }
+
+      .card img {
+        width: 100%;
+        height: auto;
+      }
+
+      .card-content {
+        padding: 15px;
+      }
+
+      .card-title {
+        font-size: 18px;
+        margin: 0;
+      }
+
+      .card-description {
+        font-size: 14px;
+        color: #666;
+      }
+    </style>
+  </head>
+  <body>
+    <h1 style="text-align: center; margin-top: 20px;">Programmation multimedia</h1>
+    
+    <div class="card-container">
+      <a href="./TP1/tp1.html" class="card">
+        <div class="card-content">
+          <div class="card-title">TP 1</div>
+          <div class="card-description">Accédez au premier TP.</div>
+        </div>
+      </a>
+    </div>
   </body>
 </html>
