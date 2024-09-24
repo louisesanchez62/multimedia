@@ -15,7 +15,7 @@
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
     
     <style>
-        #map, #map2, #map3 { height: 400px; }
+        #map, #map2, #map3, #map4 { height: 400px; }
     </style>
 </head>
 <body>
@@ -33,7 +33,11 @@
     <div class="container mt-5">
         <h1>Exercice 3 : Ajouter des données GeoJson</h1>
         <div id="map3"></div>
-        <!-- <div style="font-size: larger; font-weight: bold;" id="distance"></div> -->
+    </div>
+
+    <div class="container mt-5">
+        <h1>Bonus</h1>
+        <div id="map4"></div>
     </div>
 
     <script>
@@ -117,28 +121,46 @@
                 attribution: 'Tiles &copy; Esri &mdash; Source: Esri, DeLorme, NAVTEQ, USGS, Intermap, iPC, NRCAN, Esri Japan, METI, Esri China (Hong Kong), Esri (Thailand), TomTom, 2012'
             }).addTo(map3);
 
-            loadGeoJson();
+            loadDepartements();
         }
 
-        function loadGeoJson() {
-    fetch('https://france-geojson.gregoiredavid.fr/repo/departements.geojson')
-        .then(response => response.json())
-        .then(data => {
-            L.geoJSON(data, {
-                style: function (feature) {
-                    return {
-                        color: '#054102',
-                        weight: 2,
-                        fillOpacity: 0.1
+        function loadDepartements() {
+            const url = 'https://public.opendatasoft.com/api/records/1.0/search/?dataset=georef-france-departement&rows=200&facet=nom';
+
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    const geojsonFeatures = data.records.map(record => {
+                        return {
+                            type: 'Feature',
+                            properties: {
+                                nom: record.fields.nom,
+                                code: record.fields.code
+                            },
+                            geometry: record.fields.geo_shape
+                        };
+                    });
+
+                    const geojsonData = {
+                        type: 'FeatureCollection',
+                        features: geojsonFeatures
                     };
-                },
-                onEachFeature: function (feature, layer) {
-                    layer.bindPopup(feature.properties.nom);
-                }
-            }).addTo(map3);
-        })
-        .catch(error => console.error('Erreur lors du chargement du GeoJSON:', error));
-}
+
+                    L.geoJSON(geojsonData, {
+                        style: function (feature) {
+                            return {
+                                color: '#054102',
+                                weight: 2,
+                            };
+                        },
+                        onEachFeature: function (feature, layer) {
+                            layer.bindPopup(`${feature.properties.nom} (${feature.properties.code})`);
+                        }
+                    }).addTo(map3);
+                })
+            .catch(error => console.error('Erreur lors du chargement des données:', error));
+        }
+
         function showPosition(position) {
             const lat = position.coords.latitude;
             const lon = position.coords.longitude;
