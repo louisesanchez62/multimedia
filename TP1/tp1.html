@@ -87,7 +87,7 @@
 
         getLocationBtn.addEventListener("click", function() {
             if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(showPosition, showError);
+                navigator.geolocation.getCurrentPosition(showPosition);
             } else {
                 alert("Geolocation is not supported by this browser.");
             }
