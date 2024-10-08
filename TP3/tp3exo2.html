@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Babylon.js Scene avec Texture</title>
+    <style>
+        html, body {
+            overflow: hidden;
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+        canvas {
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+    <script src="https://cdn.babylonjs.com/babylon.js"></script>
+</head>
+<body>
+    <canvas id="renderCanvas"></canvas>
+    
+    <script>
+        const canvas = document.getElementById("renderCanvas");
+        const engine = new BABYLON.Engine(canvas, true);
+        
+        const createScene = function() {
+            const scene = new BABYLON.Scene(engine);
+            scene.clearColor = new BABYLON.Color4(0, 0, 0, 1);
+
+            const camera = new BABYLON.ArcRotateCamera("camera", Math.PI / 2, Math.PI / 4, 4, new BABYLON.Vector3(0, 0, 0), scene);
+            camera.attachControl(canvas, true);
+
+            const light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), scene);
+
+            const sphere = BABYLON.MeshBuilder.CreateSphere("sphere", {diameter: 1}, scene);
+            const material = new BABYLON.StandardMaterial("material", scene);
+            const texture = new BABYLON.Texture("./textures/Label-Rouge_image_full.png", scene);
+            material.diffuseTexture = texture;
+            sphere.material = material;
+
+            const ground = BABYLON.MeshBuilder.CreateGround("ground", {width: 6, height: 6}, scene);
+            const groundMaterial = new BABYLON.StandardMaterial("groundMaterial", scene);
+            groundMaterial.diffuseColor = new BABYLON.Color3(0.33, 0.33, 0.33);
+            ground.material = groundMaterial;
+
+            ground.position.y = -1;
+
+            return scene;
+        };
+
+        const scene = createScene();
+
+        engine.runRenderLoop(function() {
+            scene.render();
+        });
+
+        window.addEventListener("resize", function() {
+            engine.resize();
+        });
+
+        window.addEventListener('deviceorientation', function(event) {
+            let gamma = event.gamma;
+            let beta = event.beta;
+            
+            if (gamma && beta) {
+                scene.activeCamera.alpha += gamma * 0.01;
+                scene.activeCamera.beta -= beta * 0.01;
+            }
+        });
+
+    </script>
+</body>
+</html>
