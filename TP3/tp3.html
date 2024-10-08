@@ -27,35 +27,6 @@
         const sphere = new THREE.Mesh(geometry, material);
         scene.add(sphere);
 
-        const textureLoader = new THREE.TextureLoader();
-        textureLoader.load('chemin/vers/votre/texture.jpg', (texture) => {
-            sphere.material.map = texture;
-            sphere.material.needsUpdate = true;
-        });
-
-        const loader = new THREE.GLTFLoader();
-        loader.load('chemin/vers/votre/modele.gltf', (gltf) => {
-            scene.add(gltf.scene);
-        }, undefined, (error) => {
-            console.error(`Une erreur s'est produite lors du chargement du modèle:`, error);
-        });
-
-        function handleOrientation(event) {
-            sphere.rotation.x = event.beta * (Math.PI / 180);
-            sphere.rotation.y = event.gamma * (Math.PI / 180);
-        }
-
-        if (window.DeviceOrientationEvent) {
-            window.addEventListener('deviceorientation', handleOrientation);
-        }
-
-        scene.fog = new THREE.Fog(0xcccccc, 0, 100);
-
-        function animate() {
-            requestAnimationFrame(animate);
-            renderer.render(scene, camera);
-        }
-        animate();
     </script>
 </body>
 </html>
