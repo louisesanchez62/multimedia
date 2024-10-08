@@ -44,13 +44,15 @@ loader.load('models/ImageToStl.com_jzb865er6v-ironman.glb', (gltf) => {
     scene.add(ironMan);
 });
 
+let deviceRotation = { alpha: 0, beta: 0 };
+
 window.addEventListener('deviceorientation', (event) => {
   deviceRotation.alpha = event.alpha ? THREE.MathUtils.degToRad(event.alpha) : 0;
   deviceRotation.beta = event.beta ? THREE.MathUtils.degToRad(event.beta) : 0;
 });
 
 function animateIronMan() {
-  requestAnimationFrame(animate);
+  requestAnimationFrame(animateIronMan);
 
   if (ironMan) {
       ironMan.rotation.y = deviceRotation.alpha;
@@ -63,7 +65,7 @@ function animateIronMan() {
 animateIronMan();
 
 function animateCube() {
-    requestAnimationFrame(animate);
+    requestAnimationFrame(animateCube);
 
     cube.rotation.x += 0.01;
     cube.rotation.y += 0.01;
