@@ -27,6 +27,7 @@ const texture = textureLoader.load('textures/Label-Rouge_image_full.png');
 const geometry = new THREE.BoxGeometry();
 const material = new THREE.MeshPhongMaterial({ map: texture });
 const cube = new THREE.Mesh(geometry, material);
+cube.position.set(2, 0.5, 0);
 scene.add(cube);
 
 const floorGeometry = new THREE.PlaneGeometry(20, 20);
