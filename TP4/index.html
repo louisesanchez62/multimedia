@@ -20,19 +20,20 @@
             width: 100%;
             height: 100%;
         }
+        @media only screen and (max-width: 768px) {
         #mapContainer {
-            width: 300px;
-            height: 300px;
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            z-index: 1000;
+            width: 100% !important;
+            height: 30% !important;
+            top: auto !important;
+            bottom: 0 !important;
+            left: 0 !important;
         }
+    }
     </style>
     <script src="https://cdn.babylonjs.com/babylon.js"></script>
 </head>
 <body>
-    <div id="mapContainer" style="width: 500px; height: 300px; position: absolute; top: 10px; left: 10px;"></div>
+    <div id="mapContainer" style="width:30%; height: 45%; position: absolute; top: 10px; left: 10px;"></div>
     <canvas id="renderCanvas"></canvas>
     
     <script>
@@ -126,9 +127,8 @@
             const phi = BABYLON.Tools.ToRadians(90 - lat);
             const theta = BABYLON.Tools.ToRadians(lon);
             
-            scene.activeCamera.alpha = theta;
-            scene.activeCamera.beta = phi;
-            scene.activeCamera.radius = 2;
+            BABYLON.Animation.CreateAndStartAnimation("cameraRotation", scene.activeCamera, "alpha", 30, 30, scene.activeCamera.alpha, theta, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
+            BABYLON.Animation.CreateAndStartAnimation("cameraRotation", scene.activeCamera, "beta", 30, 30, scene.activeCamera.beta, phi, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
         }
 
         function createMarker(lat, lon) {
@@ -148,11 +148,7 @@
                 const lat = position.coords.latitude;
                 const lon = position.coords.longitude;
                 createMarker(lat, lon);
-            }, (error) => {
-                console.error("Error obtaining geolocation: ", error);
             });
-        } else {
-            console.error("Geolocation is not supported by this browser.");
         }
 
         engine.runRenderLoop(function() {
@@ -170,12 +166,7 @@
                 xhr.onload = function() {
                     if (xhr.status === 200) {
                         resolve(JSON.parse(xhr.responseText));
-                    } else {
-                        reject('Request failed. Status: ' + xhr.status);
                     }
-                };
-                xhr.onerror = function() {
-                    reject('Network error');
                 };
                 xhr.send();
             });
@@ -191,6 +182,28 @@
             marker.position = position;
 
             return marker;
+        }
+
+        function handleDeviceOrientation(event) {
+            if (event.beta && event.gamma) {
+                const x = event.gamma; // En degrés dans l'intervalle [-90,90]
+                const y = event.beta;  // En degrés dans l'intervalle [-180,180]
+
+                // Déplacement de la carte Leaflet
+                const center = map.getCenter();
+                const newLat = center.lat + y * 0.0001;
+                const newLng = center.lng + x * 0.0001;
+                map.panTo(new L.LatLng(newLat, newLng));
+
+                // Orientation de la Terre en 3D
+                rotateEarthToPosition(newLat, newLng);
+            }
+        }
+
+        if (window.DeviceOrientationEvent) {
+            window.addEventListener('deviceorientation', handleDeviceOrientation);
+        } else {
+            console.error("L'orientation du dispositif n'est pas prise en charge par ce navigateur.");
         }
 
 
