@@ -184,31 +184,31 @@
             engine.resize();
         });
 
-         // Custom Leaflet TiltHandler
-         L.TiltHandler = L.Handler.extend({
-            addHooks: function() {
-                L.DomEvent.on(window, 'deviceorientation', this._tilt, this);
-            },
+        //  // Custom Leaflet TiltHandler
+        //  L.TiltHandler = L.Handler.extend({
+        //     addHooks: function() {
+        //         L.DomEvent.on(window, 'deviceorientation', this._tilt, this);
+        //     },
 
-            removeHooks: function() {
-                L.DomEvent.off(window, 'deviceorientation', this._tilt, this);
-            },
+        //     removeHooks: function() {
+        //         L.DomEvent.off(window, 'deviceorientation', this._tilt, this);
+        //     },
 
-            _tilt: function(ev) {
-                // Treat Gamma angle as horizontal pan (1 degree = 1 pixel) and Beta angle as vertical pan
-                const panX = ev.gamma || 0; // Horizontal movement (left/right tilt)
-                const panY = ev.beta || 0; // Vertical movement (up/down tilt)
+        //     _tilt: function(ev) {
+        //         // Treat Gamma angle as horizontal pan (1 degree = 1 pixel) and Beta angle as vertical pan
+        //         const panX = ev.gamma || 0; // Horizontal movement (left/right tilt)
+        //         const panY = ev.beta || 0; // Vertical movement (up/down tilt)
 
-                // Pan the map based on device orientation
-                this._map.panBy(L.point(panX, panY), { animate: false });
-            }
-        });
+        //         // Pan the map based on device orientation
+        //         this._map.panBy(L.point(panX, panY), { animate: false });
+        //     }
+        // });
 
-        // Add the handler to the map
-        L.Map.addInitHook('addHandler', 'tilt', L.TiltHandler);
+        // // Add the handler to the map
+        // L.Map.addInitHook('addHandler', 'tilt', L.TiltHandler);
 
-        // Enable the tilt handler
-        map.tilt.enable();
+        // // Enable the tilt handler
+        // map.tilt.enable();
 
         initLeafletMap();
 
