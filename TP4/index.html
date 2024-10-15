@@ -29,11 +29,20 @@
             left: 0;
         }
     }
+        @media only screen and (min-width: 768px) {
+        #mapContainer {
+            width: 30%;
+            height: 45%;
+            position: absolute;
+            top: 10px;
+            left: 10px
+        }
+    }
     </style>
     <script src="https://cdn.babylonjs.com/babylon.js"></script>
 </head>
 <body>
-    <div id="mapContainer" style="width:30%; height: 45%; position: absolute; top: 10px; left: 10px;"></div>
+    <div id="mapContainer"></div>
     <canvas id="renderCanvas"></canvas>
     
     <script>
