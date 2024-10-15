@@ -110,19 +110,6 @@
 
         const scene = createScene();
 
-        // function initLeafletMap() {
-        //     map = L.map('mapContainer').setView([0, 0], 2);
-        //     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        //         attribution: '© OpenStreetMap contributors'
-        //     }).addTo(map);
-
-        //     map.on('click', function(e) {
-        //         const lat = e.latlng.lat;
-        //         const lon = e.latlng.lng;
-        //         rotateEarthToPosition(lat, lon);
-        //     });
-        // }
-
         function initLeafletMap() {
             map = L.map('mapContainer').setView([0, 0], 2);
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -134,20 +121,6 @@
                 const lon = e.latlng.lng;
                 rotateEarthToPosition(lat, lon);
             });
-
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition((position) => {
-                    const lat = position.coords.latitude;
-                    const lon = position.coords.longitude;
-                    map.setView([lat, lon], 5);
-                    createMarker(lat, lon);
-                    rotateEarthToPosition(lat, lon);
-                }, (error) => {
-                    console.error("Error obtaining geolocation: ", error);
-                });
-            } else {
-                console.error("Geolocation is not supported by this browser.");
-            }
         }
 
         function rotateEarthToPosition(lat, lon) {
@@ -211,30 +184,32 @@
             return marker;
         }
 
-        function handleDeviceOrientation(event) {
-            if (event.beta && event.gamma) {
-                const x = event.gamma; // En degrés dans l'intervalle [-90,90]
-                const y = event.beta;  // En degrés dans l'intervalle [-180,180]
+        // Device Orientation Handling
+        if (window.DeviceOrientationEvent) {
+            window.addEventListener('deviceorientation', handleOrientation);
+        }
 
-                // Déplacement de la carte Leaflet
-                const center = map.getCenter();
-                const newLat = center.lat + y * 0.0001;
-                const newLng = center.lng + x * 0.0001;
-                map.panTo(new L.LatLng(newLat, newLng));
+        function handleOrientation(event) {
+            const alpha = event.alpha; // Rotation around z-axis
+            const beta = event.beta; // Rotation around x-axis
+            const gamma = event.gamma; // Rotation around y-axis
 
-                // Orientation de la Terre en 3D
-                rotateEarthToPosition(newLat, newLng);
+            // Adjust camera based on orientation
+            if (alpha !== null && beta !== null && gamma !== null) {
+                // Convert orientation to map or globe movement
+                const lat = beta - 90; // Adjust beta to latitude range
+                const lon = alpha - 180; // Adjust alpha to longitude range
+                
+                // Update map position
+                map.setView([lat, lon], map.getZoom());
+
+                // Update Babylon camera orientation
+                rotateEarthToPosition(lat, lon);
             }
         }
 
-        if (window.DeviceOrientationEvent) {
-            window.addEventListener('deviceorientation', handleDeviceOrientation);
-        } else {
-            console.error("L'orientation du dispositif n'est pas prise en charge par ce navigateur.");
-        }
-
-
         initLeafletMap();
+        
     </script>
 </body>
 </html>
