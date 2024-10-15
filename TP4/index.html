@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Babylon.js Scene avec Texture et Leaflet</title>
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+
+    <style>
+        html, body {
+            overflow: hidden;
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+        canvas {
+            width: 100%;
+            height: 100%;
+        }
+        #mapContainer {
+            width: 300px;
+            height: 300px;
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            z-index: 1000;
+        }
+    </style>
+    <script src="https://cdn.babylonjs.com/babylon.js"></script>
+</head>
+<body>
+    <div id="mapContainer" style="width: 500px; height: 300px; position: absolute; top: 10px; left: 10px;"></div>
+    <canvas id="renderCanvas"></canvas>
+    
+    <script>
+        const canvas = document.getElementById("renderCanvas");
+        const engine = new BABYLON.Engine(canvas, true);
+        let map;
+        let sphere;
+
+        function latLonToCartesian(lat, lon, radius = 0.5) {
+            const latRad = BABYLON.Tools.ToRadians(lat);
+            const lonRad = BABYLON.Tools.ToRadians(lon);
+
+            const x = radius * Math.cos(latRad) * Math.cos(lonRad);
+            const y = radius * Math.sin(latRad);
+            const z = radius * Math.cos(latRad) * Math.sin(lonRad);
+
+            return new BABYLON.Vector3(x, y, z);
+        }
+
+        function cartesianToLatLon(x, y, z) {
+            const radius = Math.sqrt(x * x + y * y + z * z);
+            const lat = Math.asin(y / radius);
+            const lon = Math.atan2(z, x);
+            
+            return {
+                lat: BABYLON.Tools.ToDegrees(lat),
+                lon: BABYLON.Tools.ToDegrees(lon)
+            };
+        }
+        
+        const createScene = function() {
+            const scene = new BABYLON.Scene(engine);
+            scene.clearColor = new BABYLON.Color4(0, 0, 0, 1);
+
+            const camera = new BABYLON.ArcRotateCamera("camera", Math.PI / 2, Math.PI / 2, 2, new BABYLON.Vector3(0, 0, 0), scene);
+            camera.attachControl(canvas, true);
+            camera.minZ = 0.1;
+            camera.lowerRadiusLimit = 0.7;
+            camera.wheelPrecision = 50;
+
+            const light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), scene);
+            const light1 = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, -1, 0), scene);
+
+            sphere = BABYLON.MeshBuilder.CreateSphere("sphere", {diameter: 1}, scene);
+            sphere.isPickable = true;
+            sphere.scaling = new BABYLON.Vector3(-1, 1, 1);
+            const material = new BABYLON.StandardMaterial("material", scene);
+            const texture = new BABYLON.Texture("./textures/terre2.png", scene);
+            material.diffuseTexture = texture;
+            material.diffuseTexture.vScale = -1;
+            sphere.material = material;
+
+            getCountries().then(countries => {
+                countries.forEach(country => {
+                    if (country.latlng && country.latlng.length === 2) {
+                        createCountryMarker(country.latlng[0], country.latlng[1], country.flags.png);
+                    }
+                });
+            })
+
+            scene.onPointerDown = function (evt, pickResult) {
+                if (pickResult.hit && pickResult.pickedMesh === sphere) {
+                    const pickInfo = scene.pick(scene.pointerX, scene.pointerY);
+                    if (pickInfo.hit) {
+                        const pickedPoint = pickInfo.pickedPoint;
+                        const latLon = cartesianToLatLon(pickedPoint.x, pickedPoint.y, pickedPoint.z);
+                        map.setView([latLon.lat, latLon.lon], 5);
+                    }
+                }
+            };
+
+            return scene;
+        };
+
+        const scene = createScene();
+
+        function initLeafletMap() {
+            map = L.map('mapContainer').setView([0, 0], 2);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(map);
+
+            map.on('click', function(e) {
+                const lat = e.latlng.lat;
+                const lon = e.latlng.lng;
+                rotateEarthToPosition(lat, lon);
+            });
+        }
+
+        function rotateEarthToPosition(lat, lon) {
+            const phi = BABYLON.Tools.ToRadians(90 - lat);
+            const theta = BABYLON.Tools.ToRadians(lon);
+            
+            scene.activeCamera.alpha = theta;
+            scene.activeCamera.beta = phi;
+            scene.activeCamera.radius = 2;
+        }
+
+        function createMarker(lat, lon) {
+            const marker = BABYLON.MeshBuilder.CreateSphere("marker", { diameter: 0.02 }, scene);
+            const markerMaterial = new BABYLON.StandardMaterial("markerMaterial", scene);
+            markerMaterial.diffuseColor = new BABYLON.Color3(1, 0, 0);
+            marker.material = markerMaterial;
+
+            const position = latLonToCartesian(lat, lon);
+            marker.position = position;
+
+            return marker;
+        }
+
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition((position) => {
+                const lat = position.coords.latitude;
+                const lon = position.coords.longitude;
+                createMarker(lat, lon);
+            }, (error) => {
+                console.error("Error obtaining geolocation: ", error);
+            });
+        } else {
+            console.error("Geolocation is not supported by this browser.");
+        }
+
+        engine.runRenderLoop(function() {
+            scene.render();
+        });
+
+        window.addEventListener("resize", function() {
+            engine.resize();
+        });
+
+        function getCountries() {
+            return new Promise((resolve, reject) => {
+                const xhr = new XMLHttpRequest();
+                xhr.open('GET', 'https://restcountries.com/v3.1/all?fields=name,latlng,flags');
+                xhr.onload = function() {
+                    if (xhr.status === 200) {
+                        resolve(JSON.parse(xhr.responseText));
+                    } else {
+                        reject('Request failed. Status: ' + xhr.status);
+                    }
+                };
+                xhr.onerror = function() {
+                    reject('Network error');
+                };
+                xhr.send();
+            });
+        }
+
+        function createCountryMarker(lat, lon, flagUrl) {
+            const marker = BABYLON.MeshBuilder.CreateBox("countryMarker", { size: 0.01 }, scene);
+            const markerMaterial = new BABYLON.StandardMaterial("countryMarkerMaterial", scene);
+            markerMaterial.diffuseTexture = new BABYLON.Texture(flagUrl, scene);
+            marker.material = markerMaterial;
+
+            const position = latLonToCartesian(lat, lon);
+            marker.position = position;
+
+            return marker;
+        }
+
+
+        initLeafletMap();
+    </script>
+</body>
+</html>
