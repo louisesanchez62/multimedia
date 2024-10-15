@@ -38,7 +38,6 @@
         #mapContainer {
             width: 30%;
             height: 45%;
-            position: absolute;
             top: 10px;
             left: 10px
         }
@@ -190,6 +189,27 @@
             return marker;
         }
 
+        function createTiltHandler() {
+            L.TiltHandler = L.Handler.extend({
+                addHooks: function() {
+                    L.DomEvent.on(window, 'deviceorientation', this._onTilt, this);
+                },
+
+                removeHooks: function() {
+                    L.DomEvent.off(window, 'deviceorientation', this._onTilt, this);
+                },
+
+                _onTilt: function(e) {
+                    const panX = e.gamma || 0; // Left/right tilt
+                    const panY = e.beta || 0;  // Up/down tilt
+                    this._map.panBy([panX, panY], { animate: false });
+                }
+            });
+
+            L.Map.addInitHook('addHandler', 'tilt', L.TiltHandler);
+            map.tilt.enable();
+        }
+
         engine.runRenderLoop(function() {
             scene.render();
         });
@@ -198,33 +218,8 @@
             engine.resize();
         });
 
-        //  // Custom Leaflet TiltHandler
-        //  L.TiltHandler = L.Handler.extend({
-        //     addHooks: function() {
-        //         L.DomEvent.on(window, 'deviceorientation', this._tilt, this);
-        //     },
-
-        //     removeHooks: function() {
-        //         L.DomEvent.off(window, 'deviceorientation', this._tilt, this);
-        //     },
-
-        //     _tilt: function(ev) {
-        //         // Treat Gamma angle as horizontal pan (1 degree = 1 pixel) and Beta angle as vertical pan
-        //         const panX = ev.gamma || 0; // Horizontal movement (left/right tilt)
-        //         const panY = ev.beta || 0; // Vertical movement (up/down tilt)
-
-        //         // Pan the map based on device orientation
-        //         this._map.panBy(L.point(panX, panY), { animate: false });
-        //     }
-        // });
-
-        // // Add the handler to the map
-        // L.Map.addInitHook('addHandler', 'tilt', L.TiltHandler);
-
-        // // Enable the tilt handler
-        // map.tilt.enable();
-
         initLeafletMap();
+        createTiltHandler();
 
     </script>
 </body>
