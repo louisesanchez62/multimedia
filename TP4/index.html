@@ -110,6 +110,19 @@
 
         const scene = createScene();
 
+        // function initLeafletMap() {
+        //     map = L.map('mapContainer').setView([0, 0], 2);
+        //     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        //         attribution: '© OpenStreetMap contributors'
+        //     }).addTo(map);
+
+        //     map.on('click', function(e) {
+        //         const lat = e.latlng.lat;
+        //         const lon = e.latlng.lng;
+        //         rotateEarthToPosition(lat, lon);
+        //     });
+        // }
+
         function initLeafletMap() {
             map = L.map('mapContainer').setView([0, 0], 2);
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -121,6 +134,20 @@
                 const lon = e.latlng.lng;
                 rotateEarthToPosition(lat, lon);
             });
+
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition((position) => {
+                    const lat = position.coords.latitude;
+                    const lon = position.coords.longitude;
+                    map.setView([lat, lon], 5);
+                    createMarker(lat, lon);
+                    rotateEarthToPosition(lat, lon);
+                }, (error) => {
+                    console.error("Error obtaining geolocation: ", error);
+                });
+            } else {
+                console.error("Geolocation is not supported by this browser.");
+            }
         }
 
         function rotateEarthToPosition(lat, lon) {
