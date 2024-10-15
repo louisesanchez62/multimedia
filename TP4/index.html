@@ -151,14 +151,6 @@
             });
         }
 
-        engine.runRenderLoop(function() {
-            scene.render();
-        });
-
-        window.addEventListener("resize", function() {
-            engine.resize();
-        });
-
         function getCountries() {
             return new Promise((resolve, reject) => {
                 const xhr = new XMLHttpRequest();
@@ -184,32 +176,42 @@
             return marker;
         }
 
-        // Device Orientation Handling
-        if (window.DeviceOrientationEvent) {
-            window.addEventListener('deviceorientation', handleOrientation);
-        }
+        engine.runRenderLoop(function() {
+            scene.render();
+        });
 
-        function handleOrientation(event) {
-            const alpha = event.alpha; // Rotation around z-axis
-            const beta = event.beta; // Rotation around x-axis
-            const gamma = event.gamma; // Rotation around y-axis
+        window.addEventListener("resize", function() {
+            engine.resize();
+        });
 
-            // Adjust camera based on orientation
-            if (alpha !== null && beta !== null && gamma !== null) {
-                // Convert orientation to map or globe movement
-                const lat = beta - 90; // Adjust beta to latitude range
-                const lon = alpha - 180; // Adjust alpha to longitude range
-                
-                // Update map position
-                map.setView([lat, lon], map.getZoom());
+         // Custom Leaflet TiltHandler
+         L.TiltHandler = L.Handler.extend({
+            addHooks: function() {
+                L.DomEvent.on(window, 'deviceorientation', this._tilt, this);
+            },
 
-                // Update Babylon camera orientation
-                rotateEarthToPosition(lat, lon);
+            removeHooks: function() {
+                L.DomEvent.off(window, 'deviceorientation', this._tilt, this);
+            },
+
+            _tilt: function(ev) {
+                // Treat Gamma angle as horizontal pan (1 degree = 1 pixel) and Beta angle as vertical pan
+                const panX = ev.gamma || 0; // Horizontal movement (left/right tilt)
+                const panY = ev.beta || 0; // Vertical movement (up/down tilt)
+
+                // Pan the map based on device orientation
+                this._map.panBy(L.point(panX, panY), { animate: false });
             }
-        }
+        });
+
+        // Add the handler to the map
+        L.Map.addInitHook('addHandler', 'tilt', L.TiltHandler);
+
+        // Enable the tilt handler
+        map.tilt.enable();
 
         initLeafletMap();
-        
+
     </script>
 </body>
 </html>
