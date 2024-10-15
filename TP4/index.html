@@ -142,6 +142,7 @@
         L.Handler.OrientationMove = L.Handler.extend({
             addHooks: function() {
                 if (window.DeviceOrientationEvent) {
+                    this._onDeviceOrientation = this._onDeviceOrientation.bind(this);
                     window.addEventListener('deviceorientation', this._onDeviceOrientation, false);
                 }
             },
@@ -162,12 +163,12 @@
                 var x = gamma * 0.1;
                 var y = beta * 0.1;
 
-                var center = this._map.getCenter();
                 this._map.panBy([x, y]);
+                
+                // Ajoutez cette ligne pour faire tourner la Terre en 3D
+                rotateEarthToPosition(this._map.getCenter().lat, this._map.getCenter().lng);
             }
         });
-
-        L.Map.addInitHook('addHandler', 'orientationMove', L.Handler.OrientationMove);
 
         //------------------------------
 
